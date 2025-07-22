@@ -1,14 +1,15 @@
 <?php
-// Iniciar sessão no início de tudo
+// Iniciar sessão é a PRIMEIRA coisa a se fazer em qualquer script.
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
 }
 
 // Configurações de conexão com o banco de dados
+// ... (suas configurações de conexão continuam as mesmas) ...
 $host = 'localhost';
-$dbname = 'premio_mpt';
-$username = 'root';
-$password = '';
+$dbname = 'cayque_mpt';
+$username = 'cayque_mpt';
+$password = 'Kiq3506!';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
@@ -19,7 +20,7 @@ try {
 }
 
 
-// Função para verificar se o jurado existe
+// --- FUNÇÕES EXISTENTES ---
 function verificarJurado($codigo)
 {
     global $pdo;
@@ -28,33 +29,18 @@ function verificarJurado($codigo)
     $stmt->execute();
     return $stmt->fetch();
 }
-
-// Função para registrar o acesso do jurado
-function registrarAcesso($jurado_id)
-{
-    global $pdo;
-    $stmt = $pdo->prepare("UPDATE jurados SET updated_at = NOW() WHERE id = :id");
-    $stmt->bindParam(':id', $jurado_id);
-    $stmt->execute();
-}
-
-// Função para obter todos os grupos
 function obterGrupos()
 {
     global $pdo;
     $stmt = $pdo->query("SELECT * FROM grupos ORDER BY id");
     return $stmt->fetchAll();
 }
-
-// Função para obter todas as categorias
 function obterCategorias()
 {
     global $pdo;
     $stmt = $pdo->query("SELECT * FROM categorias ORDER BY nome");
     return $stmt->fetchAll();
 }
-
-// Função para obter um grupo específico pelo ID
 function obterGrupoPorId($id)
 {
     global $pdo;
@@ -63,8 +49,6 @@ function obterGrupoPorId($id)
     $stmt->execute();
     return $stmt->fetch();
 }
-
-// Função para obter uma categoria específica pelo ID
 function obterCategoriaPorId($id)
 {
     global $pdo;
@@ -73,17 +57,33 @@ function obterCategoriaPorId($id)
     $stmt->execute();
     return $stmt->fetch();
 }
+function gerarEmbedGdrive($url)
+{
+    return preg_replace('/\/view.*|\/edit.*/', '/preview', $url);
+}
 
-// Função para obter os trabalhos de um grupo e categoria específicos (COM STATUS DE AVALIAÇÃO)
+// --- NOVA FUNÇÃO ---
+// Busca os critérios para uma determinada categoria
+function obterCriteriosPorCategoria($categoria_id)
+{
+    global $pdo;
+    $stmt = $pdo->prepare("SELECT * FROM criterios WHERE categoria_id = :categoria_id ORDER BY id");
+    $stmt->bindParam(':categoria_id', $categoria_id, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll();
+}
+
+// --- FUNÇÕES MODIFICADAS ---
 function obterTrabalhos($grupo_id, $categoria_id, $jurado_id)
 {
     global $pdo;
+    // A lógica de ver se foi avaliado agora checa a tabela de observações
     $stmt = $pdo->prepare("
         SELECT 
             t.*,
-            (CASE WHEN a.id IS NOT NULL THEN 1 ELSE 0 END) as avaliado
+            (CASE WHEN obs.id IS NOT NULL THEN 1 ELSE 0 END) as avaliado
         FROM trabalhos t
-        LEFT JOIN avaliacoes a ON t.id = a.trabalho_id AND a.jurado_id = :jurado_id
+        LEFT JOIN avaliacoes_observacoes obs ON t.id = obs.trabalho_id AND obs.jurado_id = :jurado_id
         WHERE t.grupo_id = :grupo_id AND t.categoria_id = :categoria_id 
         ORDER BY t.aluno_nome
     ");
@@ -94,18 +94,16 @@ function obterTrabalhos($grupo_id, $categoria_id, $jurado_id)
     return $stmt->fetchAll();
 }
 
-// Função para obter os dados de um trabalho específico e se já foi avaliado
 function obterTrabalhoParaAvaliacao($trabalho_id, $jurado_id)
 {
     global $pdo;
     $stmt = $pdo->prepare("
         SELECT 
-            t.*, 
-            a.nota, 
-            a.observacao,
-            (CASE WHEN a.id IS NOT NULL THEN 1 ELSE 0 END) as avaliado
+            t.*,
+            (CASE WHEN obs.id IS NOT NULL THEN 1 ELSE 0 END) as avaliado,
+            obs.observacao
         FROM trabalhos t
-        LEFT JOIN avaliacoes a ON t.id = a.trabalho_id AND a.jurado_id = :jurado_id
+        LEFT JOIN avaliacoes_observacoes obs ON t.id = obs.trabalho_id AND obs.jurado_id = :jurado_id
         WHERE t.id = :trabalho_id
     ");
     $stmt->bindParam(':trabalho_id', $trabalho_id, PDO::PARAM_INT);
@@ -114,38 +112,70 @@ function obterTrabalhoParaAvaliacao($trabalho_id, $jurado_id)
     return $stmt->fetch();
 }
 
-// Função para salvar a avaliação
-function salvarAvaliacao($jurado_id, $trabalho_id, $nota, $observacao)
+// Função para buscar as notas já dadas para um trabalho
+function obterNotasDadas($trabalho_id, $jurado_id)
 {
     global $pdo;
-    $stmt_check = $pdo->prepare("SELECT id FROM avaliacoes WHERE jurado_id = :jurado_id AND trabalho_id = :trabalho_id");
-    $stmt_check->execute(['jurado_id' => $jurado_id, 'trabalho_id' => $trabalho_id]);
-    if ($stmt_check->fetch()) {
-        return false; // Já avaliou
-    }
-
-    $stmt = $pdo->prepare("INSERT INTO avaliacoes (jurado_id, trabalho_id, nota, observacao) VALUES (:jurado_id, :trabalho_id, :nota, :observacao)");
-    return $stmt->execute([
-        ':jurado_id' => $jurado_id,
-        ':trabalho_id' => $trabalho_id,
-        ':nota' => $nota,
-        ':observacao' => $observacao
-    ]);
+    $stmt = $pdo->prepare("
+        SELECT c.nome, a.nota 
+        FROM avaliacoes a
+        JOIN criterios c ON a.criterio_id = c.id
+        WHERE a.trabalho_id = :trabalho_id AND a.jurado_id = :jurado_id
+    ");
+    $stmt->execute(['trabalho_id' => $trabalho_id, 'jurado_id' => $jurado_id]);
+    return $stmt->fetchAll();
 }
 
-// Função para obter o ranking de um grupo e categoria (COM LÓGICA DE EMPATE)
+
+function salvarAvaliacao($jurado_id, $trabalho_id, $notas, $observacao)
+{
+    global $pdo;
+    try {
+        $pdo->beginTransaction();
+
+        // Salvar a observação geral
+        $stmt_obs = $pdo->prepare("INSERT INTO avaliacoes_observacoes (jurado_id, trabalho_id, observacao) VALUES (:jurado_id, :trabalho_id, :observacao)");
+        $stmt_obs->execute(['jurado_id' => $jurado_id, 'trabalho_id' => $trabalho_id, 'observacao' => $observacao]);
+
+        // Salvar a nota de cada critério
+        $stmt_nota = $pdo->prepare("INSERT INTO avaliacoes (jurado_id, trabalho_id, criterio_id, nota) VALUES (:jurado_id, :trabalho_id, :criterio_id, :nota)");
+        foreach ($notas as $criterio_id => $nota) {
+            $stmt_nota->execute([
+                ':jurado_id' => $jurado_id,
+                ':trabalho_id' => $trabalho_id,
+                ':criterio_id' => $criterio_id,
+                ':nota' => $nota
+            ]);
+        }
+        $pdo->commit();
+        return true;
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        return false;
+    }
+}
+
 function obterRanking($grupo_id, $categoria_id)
 {
     global $pdo;
+    // Query mais complexa para calcular a média das médias dos jurados
     $sql = "
+        WITH MediasPorJurado AS (
+            SELECT
+                a.trabalho_id,
+                a.jurado_id,
+                AVG(a.nota) AS media_jurado
+            FROM avaliacoes a
+            GROUP BY a.trabalho_id, a.jurado_id
+        )
         SELECT
             t.aluno_nome,
             t.escola_nome,
             t.titulo_trabalho,
-            AVG(a.nota) AS pontuacao_media,
-            DENSE_RANK() OVER (ORDER BY AVG(a.nota) DESC) as posicao
+            AVG(mpj.media_jurado) AS pontuacao_final,
+            DENSE_RANK() OVER (ORDER BY AVG(mpj.media_jurado) DESC) as posicao
         FROM trabalhos t
-        JOIN avaliacoes a ON t.id = a.trabalho_id
+        JOIN MediasPorJurado mpj ON t.id = mpj.trabalho_id
         WHERE t.grupo_id = :grupo_id AND t.categoria_id = :categoria_id
         GROUP BY t.id, t.aluno_nome, t.escola_nome, t.titulo_trabalho
         ORDER BY posicao ASC, t.aluno_nome ASC;
@@ -156,12 +186,4 @@ function obterRanking($grupo_id, $categoria_id)
     $stmt->bindParam(':categoria_id', $categoria_id, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();
-}
-
-/**
- * Gera um link de embed para o Google Drive.
- */
-function gerarEmbedGdrive($url)
-{
-    return preg_replace('/\/view.*|\/edit.*/', '/preview', $url);
 }

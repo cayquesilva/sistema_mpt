@@ -352,6 +352,7 @@ body {
   font-weight: 600;
   text-align: center;
   transition: background-color 0.3s ease;
+  cursor: pointer;
 }
 
 .trabalho-card:hover .btn-avaliar {
@@ -671,6 +672,65 @@ body {
 .btn-salvar:hover {
   background-color: #218838;
   transform: translateY(-2px);
+}
+
+/* --- ESTILOS PARA AVALIAÇÃO POR CRITÉRIOS --- */
+
+.form-group-criterio {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.form-group-criterio:last-of-type {
+  border-bottom: none;
+}
+.form-group-criterio label {
+  flex-grow: 1;
+  margin-bottom: 0;
+  margin-right: 15px;
+}
+
+.nota-input-criterio {
+  width: 100px;
+  text-align: center;
+  padding: 10px 12px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+.nota-input-criterio:focus {
+  border-color: var(--cor-primaria);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 80, 158, 0.2);
+}
+
+/* Estilo para a lista de resultados */
+.criterios-resultado-lista {
+  margin-bottom: 20px;
+  border-top: 1px solid var(--cor-borda);
+  padding-top: 15px;
+}
+.criterio-resultado-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: white;
+  padding: 10px 15px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  border: 1px solid #e9ecef;
+}
+.criterio-resultado-item span {
+  color: var(--cor-texto-principal);
+}
+.criterio-resultado-item strong {
+  font-size: 16px;
+  color: var(--cor-primaria);
+  font-weight: 700;
 }
 
 /* Estilo para a caixa de resultado quando já avaliado */

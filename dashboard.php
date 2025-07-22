@@ -82,7 +82,7 @@ $ranking = obterRanking($_SESSION['grupo_id'], $_SESSION['categoria_id']);
                                 <td><?php echo htmlspecialchars($item['aluno_nome']); ?></td>
                                 <td><?php echo htmlspecialchars($item['titulo_trabalho']); ?></td>
                                 <td><?php echo htmlspecialchars($item['escola_nome']); ?></td>
-                                <td class="col-pontuacao"><?php echo number_format($item['pontuacao_media'], 2, ',', '.'); ?></td>
+                                <td class="col-pontuacao"><?php echo number_format($item['pontuacao_final'], 1, ',', '.'); ?></td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
