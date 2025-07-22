@@ -1,0 +1,188 @@
+============================================================
+INSTRUÇÕES DE INSTALAÇÃO - SISTEMA DE AVALIAÇÃO PRÊMIO MPT
+============================================================
+
+Este arquivo contém o passo a passo para instalar a aplicação em um servidor de hospedagem padrão (com cPanel e MySQL).
+
+--------------------
+PRÉ-REQUISITOS:
+--------------------
+- Servidor de hospedagem com PHP e MySQL/MariaDB (ex: cPanel).
+- Acesso ao painel de controle da hospedagem.
+- Arquivos do projeto compactados em um arquivo .zip.
+
+
+---------------------------------------------------
+SCRIPT SQL PARA CRIAÇÃO DO BANCO DE DADOS
+---------------------------------------------------
+
+Copie todo o código abaixo. Você pode salvá-lo em um arquivo com a extensão .sql (ex: 'banco.sql') para importar, ou colar diretamente na aba "SQL" do phpMyAdmin do seu novo banco de dados.
+
+-- --- ESTRUTURA DAS TABELAS ---
+
+CREATE TABLE `jurados` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) NOT NULL,
+  `codigo_acesso` varchar(50) NOT NULL UNIQUE,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `grupos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) NOT NULL,
+  `descricao` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `categorias` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nome` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `trabalhos` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `titulo_trabalho` varchar(255) NOT NULL,
+  `aluno_nome` varchar(255) NOT NULL,
+  `escola_nome` varchar(255) DEFAULT NULL,
+  `grupo_id` int(11) NOT NULL,
+  `categoria_id` int(11) NOT NULL,
+  `link_gdrive` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `grupo_id` (`grupo_id`),
+  KEY `categoria_id` (`categoria_id`),
+  CONSTRAINT `trabalhos_ibfk_1` FOREIGN KEY (`grupo_id`) REFERENCES `grupos` (`id`),
+  CONSTRAINT `trabalhos_ibfk_2` FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `criterios` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `categoria_id` int(11) NOT NULL,
+  `nome` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `categoria_id` (`categoria_id`),
+  CONSTRAINT `criterios_ibfk_1` FOREIGN KEY (`categoria_id`) REFERENCES `categorias` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `avaliacoes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `jurado_id` int(11) NOT NULL,
+  `trabalho_id` int(11) NOT NULL,
+  `criterio_id` int(11) NOT NULL,
+  `nota` decimal(3,1) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `avaliacao_unica` (`jurado_id`,`trabalho_id`,`criterio_id`),
+  KEY `jurado_id` (`jurado_id`),
+  KEY `trabalho_id` (`trabalho_id`),
+  KEY `criterio_id` (`criterio_id`),
+  CONSTRAINT `avaliacoes_ibfk_1` FOREIGN KEY (`jurado_id`) REFERENCES `jurados` (`id`),
+  CONSTRAINT `avaliacoes_ibfk_2` FOREIGN KEY (`trabalho_id`) REFERENCES `trabalhos` (`id`),
+  CONSTRAINT `avaliacoes_ibfk_3` FOREIGN KEY (`criterio_id`) REFERENCES `criterios` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `avaliacoes_observacoes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `jurado_id` int(11) NOT NULL,
+  `trabalho_id` int(11) NOT NULL,
+  `observacao` text DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `observacao_unica` (`jurado_id`,`trabalho_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+
+-- --- DADOS INICIAIS ---
+
+INSERT INTO `grupos` (`id`, `nome`, `descricao`) VALUES
+(1, 'Grupo 1: Trabalho Infantil', 'Alunos(as) de 4° e 5° ano do ensino fundamental'),
+(2, 'Grupo 2: Aprendizagem Profissional', 'Alunos(as) de 6° e 7° ano do ensino fundamental'),
+(3, 'Grupo 3: Segurança e Saúde', 'Alunos(as) de 8° e 9° ano do ensino fundamental');
+
+INSERT INTO `categorias` (`id`, `nome`) VALUES
+(1, 'Conto'),
+(2, 'Poesia'),
+(3, 'Música'),
+(4, 'Desenho');
+
+INSERT INTO `criterios` (`categoria_id`, `nome`) VALUES
+(4, 'Observância ao tema'),
+(4, 'Expressão da ideia'),
+(4, 'Desenvolvimento criativo'),
+(4, 'Qualidade do desenho'),
+(1, 'Observância ao tema'),
+(1, 'Correção ortográfica'),
+(1, 'Criatividade'),
+(1, 'Objetividade e clareza'),
+(3, 'Observância ao tema'),
+(3, 'Criatividade'),
+(3, 'Expressão da ideia'),
+(3, 'Adequação da letra à melodia'),
+(2, 'Observância ao tema'),
+(2, 'Correção ortográfica'),
+(2, 'Criatividade'),
+(2, 'Expressão da ideia');
+
+
+---------------------------------------------------
+PARTE 1: CONFIGURAÇÃO DO BANCO DE DADOS
+---------------------------------------------------
+
+1. Acesse o seu painel de controle (cPanel).
+2. Vá para a seção "Bancos de dados" e clique em "Bancos de dados MySQL®".
+
+3. CRIE UM NOVO BANCO DE DADOS:
+   - Dê um nome, por exemplo: 'premio_mpt'.
+   - Anote o nome completo que o cPanel irá gerar (ex: 'usuario_premio_mpt').
+
+4. CRIE UM NOVO USUÁRIO MYSQL:
+   - Dê um nome de usuário (ex: 'user_mpt') e crie uma senha forte.
+   - Anote o nome de usuário completo (ex: 'usuario_user_mpt') e a senha.
+
+5. ADICIONE O USUÁRIO AO BANCO DE DADOS:
+   - Na seção "Adicionar usuário ao banco de dados", selecione o usuário e o banco que você criou.
+   - Na tela seguinte, marque a caixa "TODOS OS PRIVILÉGIOS" e salve.
+
+6. IMPORTE O BANCO DE DADOS:
+   - Volte ao cPanel e abra o "phpMyAdmin".
+   - Selecione o seu banco de dados na lista à esquerda.
+   - Clique na aba "SQL".
+   - Cole todo o código da seção "SCRIPT SQL" acima nesta caixa de texto e clique em "Executar".
+
+
+-----------------------------------------------------------
+PARTE 2: ENVIO E CONFIGURAÇÃO DOS ARQUIVOS DA APLICAÇÃO
+-----------------------------------------------------------
+
+1. No cPanel, vá em "Gerenciador de Arquivos".
+2. Navegue até a pasta do seu site (geralmente `public_html`).
+
+3. ENVIE E EXTRAIA OS ARQUIVOS:
+   - Clique em "Carregar" e envie o arquivo .zip do seu projeto.
+   - Após o envio, clique com o botão direito sobre o .zip e selecione "Extract" (Extrair).
+
+4. EDITE O ARQUIVO DE CONFIGURAÇÃO:
+   - Dentro do Gerenciador de Arquivos, encontre o arquivo `config.php`.
+   - Clique com o botão direito sobre ele e selecione "Edit".
+   - Altere as seguintes linhas com os dados que você anotou na Parte 1:
+
+     $dbname   = 'NOME_COMPLETO_DO_BANCO_DE_DADOS';
+     $username = 'NOME_COMPLETO_DO_USUARIO';
+     $password = 'SENHA_DO_USUARIO';
+     $host     = 'localhost'; // Geralmente 'localhost', não mude a menos que sua hospedagem exija.
+
+5. SALVE o arquivo `config.php`.
+
+
+--------------------
+PARTE 3: TESTE
+--------------------
+
+1. Abra o endereço do seu site no navegador.
+2. O sistema de login deve aparecer. Faça um teste completo.
+
+
+============================================================
+FIM DAS INSTRUÇÕES
+============================================================
