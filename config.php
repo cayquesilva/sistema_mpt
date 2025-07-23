@@ -7,9 +7,9 @@ if (session_status() == PHP_SESSION_NONE) {
 // Configurações de conexão com o banco de dados
 // ... (suas configurações de conexão continuam as mesmas) ...
 $host = 'localhost';
-$dbname = 'cayque_mpt';
-$username = 'cayque_mpt';
-$password = 'Kiq3506!';
+$dbname = 'premio_mpt';
+$username = 'root';
+$password = '';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
