@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$trabalho['avaliado']) {
                     <strong>Escola:</strong> <?php echo htmlspecialchars($trabalho['escola_nome']); ?>
                 </p>
                 <div class="media-geral-display">
-                    Média Geral Atual: <strong><?php echo ($media_geral !== null) ? number_format($media_geral, 2, ',', '.') : 'Aguardando avaliações'; ?></strong>
+                    Média Geral Atual: <strong><?php echo ($media_geral !== null) ? number_format($media_geral, 1, ',', '.') : 'Aguardando avaliações'; ?></strong>
                 </div>
             </div>
             <div class="pagina-acoes">

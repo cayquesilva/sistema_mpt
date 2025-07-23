@@ -62,7 +62,7 @@ $trabalhos = obterTrabalhos($_SESSION['grupo_id'], $_SESSION['categoria_id'], $_
 
                             <div class="trabalho-media">
                                 <i class="fas fa-star"></i> Média Atual:
-                                <strong><?php echo ($media_trabalho !== null) ? number_format($media_trabalho, 2, ',', '.') : 'N/A'; ?></strong>
+                                <strong><?php echo ($media_trabalho !== null) ? number_format($media_trabalho, 1, ',', '.') : 'N/A'; ?></strong>
                             </div>
                         </div>
 
