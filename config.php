@@ -94,6 +94,31 @@ function obterTrabalhos($grupo_id, $categoria_id, $jurado_id)
     return $stmt->fetchAll();
 }
 
+// --- NOVA FUNÇÃO PARA CALCULAR A MÉDIA DE UM TRABALHO ---
+function obterMediaTrabalho($trabalho_id)
+{
+    global $pdo;
+
+    // A lógica é a mesma do ranking: calcula a média das médias de cada jurado
+    $sql = "
+        WITH MediasPorJurado AS (
+            SELECT
+                AVG(a.nota) AS media_jurado
+            FROM avaliacoes a
+            WHERE a.trabalho_id = :trabalho_id
+            GROUP BY a.jurado_id
+        )
+        SELECT AVG(media_jurado) AS media_final FROM MediasPorJurado;
+    ";
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':trabalho_id', $trabalho_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $resultado = $stmt->fetchColumn(); // Pega apenas o valor da primeira coluna
+
+    return $resultado;
+}
+
 function obterTrabalhoParaAvaliacao($trabalho_id, $jurado_id)
 {
     global $pdo;

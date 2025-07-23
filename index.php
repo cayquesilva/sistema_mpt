@@ -45,7 +45,10 @@ $trabalhos = obterTrabalhos($_SESSION['grupo_id'], $_SESSION['categoria_id'], $_
             </div>
         <?php else: ?>
             <div class="trabalhos-grid">
-                <?php foreach ($trabalhos as $trabalho): ?>
+                <?php foreach ($trabalhos as $trabalho):
+                    // Chama a nova função para obter a média de cada trabalho
+                    $media_trabalho = obterMediaTrabalho($trabalho['id']);
+                ?>
                     <div class="trabalho-card <?php echo ($trabalho['avaliado'] ? 'avaliado' : ''); ?>" onclick="window.location.href='avaliar.php?id=<?php echo $trabalho['id']; ?>'">
 
                         <div class="trabalho-preview">
@@ -56,6 +59,11 @@ $trabalhos = obterTrabalhos($_SESSION['grupo_id'], $_SESSION['categoria_id'], $_
                             <h4><?php echo htmlspecialchars($trabalho['titulo_trabalho']); ?></h4>
                             <p><strong>Aluno(a):</strong> <?php echo htmlspecialchars($trabalho['aluno_nome']); ?></p>
                             <p><strong>Escola:</strong> <?php echo htmlspecialchars($trabalho['escola_nome']); ?></p>
+
+                            <div class="trabalho-media">
+                                <i class="fas fa-star"></i> Média Atual:
+                                <strong><?php echo ($media_trabalho !== null) ? number_format($media_trabalho, 2, ',', '.') : 'N/A'; ?></strong>
+                            </div>
                         </div>
 
                         <button class="btn-avaliar">

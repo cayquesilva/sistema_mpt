@@ -21,6 +21,8 @@ if (!$trabalho) {
     exit;
 }
 
+$media_geral = obterMediaTrabalho($trabalho_id);
+
 // Busca os critérios específicos da categoria deste trabalho
 $criterios = obterCriteriosPorCategoria($trabalho['categoria_id']);
 
@@ -91,6 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$trabalho['avaliado']) {
                     <strong>Aluno(a):</strong> <?php echo htmlspecialchars($trabalho['aluno_nome']); ?> |
                     <strong>Escola:</strong> <?php echo htmlspecialchars($trabalho['escola_nome']); ?>
                 </p>
+                <div class="media-geral-display">
+                    Média Geral Atual: <strong><?php echo ($media_geral !== null) ? number_format($media_geral, 2, ',', '.') : 'Aguardando avaliações'; ?></strong>
+                </div>
             </div>
             <div class="pagina-acoes">
                 <a href="index.php" class="btn-acao neutro"><i class="fas fa-arrow-left"></i> Voltar para a Lista</a>

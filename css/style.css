@@ -558,6 +558,38 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
+/* --- ESTILOS PARA EXIBIÇÃO DA MÉDIA --- */
+
+/* Estilo da média no card da listagem */
+.trabalho-media {
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: var(--cor-texto-claro);
+}
+.trabalho-media i {
+  color: var(--cor-acento); /* Amarelo */
+}
+.trabalho-media strong {
+  color: var(--cor-primaria);
+  font-size: 16px;
+}
+
+/* Estilo da média no cabeçalho da página de avaliação */
+.media-geral-display {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background-color: #e6f0f8;
+  border-radius: 8px;
+  display: inline-block;
+  font-size: 15px;
+  color: var(--cor-primaria);
+}
+.media-geral-display strong {
+  font-weight: 700;
+}
+
 /* Ajustes para telas menores */
 @media (max-width: 768px) {
   .selecao-container {
