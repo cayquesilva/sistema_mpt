@@ -927,7 +927,105 @@ body {
   border-color: #c3e6cb;
 }
 
-/
+/* --- ESTILOS PARA A PÁGINA DE RELATÓRIOS --- */
+
+/* Ajuste no container do formulário que já existe */
+.form-container {
+  background-color: #ffffff;
+  padding: 30px 40px;
+  border-radius: 12px;
+  border: 1px solid var(--cor-borda);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.form-container h3 {
+  color: var(--cor-primaria);
+  font-size: 20px;
+  margin-bottom: 25px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+/* Estilo para os menus de seleção (select) */
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 16px 12px;
+}
+.form-control:focus {
+  border-color: var(--cor-primaria);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 80, 158, 0.2);
+}
+
+/* Estilo para as opções de tipo de relatório (radio buttons) */
+.opcoes-relatorio {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.opcao-radio input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+}
+
+.opcao-radio label {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  border: 2px solid var(--cor-borda);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.opcao-radio label i {
+  font-size: 24px;
+  color: var(--cor-secundaria);
+  width: 40px;
+  text-align: center;
+}
+
+.opcao-radio label strong {
+  color: var(--cor-texto-principal);
+  display: block;
+}
+
+.opcao-radio label span {
+  font-size: 13px;
+  color: var(--cor-texto-claro);
+}
+
+.opcao-radio input[type="radio"]:checked + label {
+  border-color: var(--cor-primaria);
+  background-color: #e6f0f8;
+  box-shadow: 0 0 0 3px rgba(0, 80, 158, 0.2);
+}
+
+.opcao-radio input[type="radio"]:checked + label i {
+  color: var(--cor-primaria);
+}
+
+/* Responsividade para as opções de relatório */
+@media (max-width: 768px) {
+  .opcoes-relatorio {
+    grid-template-columns: 1fr;
+  }
+}
 
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 768px) {

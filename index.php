@@ -33,6 +33,9 @@ $trabalhos = obterTrabalhos($_SESSION['grupo_id'], $_SESSION['categoria_id'], $_
             <div class="pagina-acoes">
                 <a href="dashboard.php" class="btn-acao primario"><i class="fas fa-chart-line"></i> Ver Ranking</a>
                 <a href="selecionar_categoria.php" class="btn-acao neutro"><i class="fas fa-exchange-alt"></i> Trocar Filtros</a>
+                <?php if (isset($_SESSION['jurado_codigo_acesso']) && $_SESSION['jurado_codigo_acesso'] === 'admin'): ?>
+                    <a href="relatorios.php" class="btn-acao secundario"><i class="fas fa-file-pdf"></i> Gerar Relatórios</a>
+                <?php endif; ?>
                 <a href="login.php?logout=1" class="btn-acao erro"><i class="fas fa-sign-out-alt"></i> Sair</a>
 
             </div>
